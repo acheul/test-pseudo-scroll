@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PseudoScroll</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body, main {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+    }
+
+    #box {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <main>
+
+    <div id="box">
+      <div id="txt"></div>
+    </div>
+
+  </main>
+  
+  <script>
+
+    var cur_y = 0;
+    const min_y = 0;
+    const max_y = 1000;
+
+    const pseudo_scroll = (cur_y) => {
+      while (txt.firstChild) {
+        txt.removeChild(txt.firstChild);
+      }
+      txt.appendChild(document.createTextNode(cur_y.toString()));
+    };
+    pseudo_scroll(cur_y);
+
+    document.addEventListener("wheel", (e)=>{
+      let dy = e.deltaY;
+      let new_y = Math.min(Math.max(cur_y+dy, min_y), max_y);
+      cur_y = new_y;
+      let dy_ = new_y-cur_y;
+
+      console.log("wheel", dy, dy_, cur_y);
+      pseudo_scroll(cur_y);
+    });
+
+    var y0 = null;
+
+    const pointer_move = (e) => {
+      let y = e.clientY;
+      let dy = y-y0;
+
+      let new_y = Math.min(Math.max(cur_y+dy, min_y), max_y);
+      cur_y = new_y;
+      let dy_ = new_y-cur_y;
+      y0 = y+dy_;
+
+      console.log("move", dy, dy_, cur_y);
+      pseudo_scroll(cur_y);
+    };
+
+    const pointer_up = (e) => {
+      y0 = null;
+      document.removeEventListener("pointermove", pointer_move);
+      document.removeEventListener("pointerup", pointer_up);
+    };
+
+    const pointer_down = (e) => {
+      y0 = e.clientY;
+      document.addEventListener("pointermove", pointer_move);
+      document.addEventListener("pointerup", pointer_up);
+    };
+
+    box.addEventListener("pointerdown", pointer_down);
+    box.addEventListener("dragstart", (e)=>{ return false; });
+
+  </script>
+</body>
+</html>
